@@ -1,4 +1,4 @@
-# contentlifecyclemgr
+# content lifecycle manager
 SUSE Manager v4.x comes with a new feature "Content Lifecycle Management" (CLM) which helps to prepare channel cloning and staging by using Web UI. CLM is great new feature but spacecmd does not provide commandline possibilities to automate the build and promote tasks. If someone need to trigger the build and promote tasks with certain schedules the only way to achieve is using API.
 
 This script helps admins to trigger "build" and "promote" tasks which can be scheduled by using contab on SUSE Manager v4.x host.
