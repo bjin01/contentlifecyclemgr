@@ -40,6 +40,7 @@ key = client.auth.login(MANAGER_LOGIN, MANAGER_PASSWORD)
 today = datetime.today()
 earliest_occurrence = xmlrpclib.DateTime(today)
 
+tasko_text = 'Check taskomatic logs in order to monitor the status of the build and promote tasks e.g. # tail -f /var/log/rhn/rhn_taskomatic_daemon.log.'
 def printzip(dict_object):
     for i in dict_object:
         keys = i.keys()
@@ -58,11 +59,6 @@ def listproject(key):
     projlist = client.contentmanagement.listProjects(key)
     if projlist:
         printzip(projlist)
-#        for i in projlist:
-#            print("project---------------------------------------------")
-#            for k,  v in i.items():
-#                print("{} => {}".format(k, v))
-#            print("----------------------------------------------------")
         return True
     else:
         print("no projects found")
@@ -72,51 +68,75 @@ def listEnvironment(key, projectLabel):
     envlist = client.contentmanagement.listProjectEnvironments(key, projectLabel)
     if envlist:
         printzip(envlist)
-#        for i in envlist:
-#            print("Environment----------------------------------------------")
-#            for k,  v in i.items():
-#                print("{} => {}".format(k, v))
-#            print("---------------------------------------------------------")
         return True
     else:
         print("no projectEnvironments found")
         return False
 
 def buildproject(key,  projLabel):
-    try:
-        buildresult = client.contentmanagement.buildProject(key, projLabel)
-        print("project build task: %s"  %(str(buildresult)))
-    except:
-        return False
+    buildresult = client.contentmanagement.buildProject(key, projLabel)
+    if buildresult == 1:
+            print("Build %s task: Succesful"  %(projLabel))
+            print(tasko_text)
+    else:
+            print("Build failed. Exit with error.")
+            exit(1)    
     return buildresult
 
 def promoteenvironment(key,  projLabel,  envLabel):
     try:
-        promote_result = client.contentmanagement.promoteProject(key, projLabel,  envLabel)
-        print("promote %s %s task: %s"  %(projLabel, envLabel, str(promote_result)))
-    except:
-        return False
-    return promote_result
+        lookupenv = client.contentmanagement.lookupEnvironment(key, projLabel,  envLabel)
+        print(lookupenv)
+    except Exception as ex:
+        print(ex)
+        print("lookup project and environment label failed. Maybe the project and or environment label does not exist. exit with error")
+        exit(1)
+    
+    for k,  v in lookupenv.items():
+        no_target = 1
+        if  k.find("nextEnvironmentLabel"):
+            no_target = 0
+
+    if no_target == 1:
+        print("The environment label you entered does not have a next environment to promote to! Exit with error.")
+        exit(1)
+    else:
+        try:
+            promote_result = client.contentmanagement.promoteProject(key, projLabel,  envLabel)
+            if promote_result == 1:
+                print("promote %s %s task: Succesful."  %(projLabel, envLabel))
+                print(tasko_text)
+            else:
+                print("promote failed. Exit with error.")
+                exit(1)
+        except Exception as ex:
+            print(ex)
+            return False
+        return promote_result
     
 if args.listProject:
     try:
         ret = listproject(key)
-    except:
+    except Exception as ex:
+        print(ex)
         print('something went wrong with listproject')
 elif args.listEnvironment and args.projLabel:
     try:
         ret = listEnvironment(key, args.projLabel)
-    except:
+    except Exception as ex:
+        print(ex)
         print("something went wrong with listEnvironment.")
 elif args.build and args.projLabel:
     try:
         ret = buildproject(key, args.projLabel)
-    except:
+    except Exception as ex:
+        print(ex)
         print("something went wrong with buildproject.")
 elif args.promote and args.projLabel and args.envLabel:
      try:
         ret = promoteenvironment(key, args.projLabel,  args.envLabel)
-     except:
+     except Exception as ex:
+        print(ex)
         print("something went wrong with promote environment.")
 else:
     print("Please verify you entered correct parameters. Exiting.")
