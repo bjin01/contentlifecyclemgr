@@ -30,14 +30,13 @@ optional arguments:
   --envLabel ENVLABEL   Enter the environment label. e.g. dev
   ```
   
-##main features
-
+## main features:
 * list projects
 * list project environments by providing project label
 * build project by providing project label
 * promote environment (stages) by providing project label and project environment label. 
 
-##specical checks added:
+## specical checks added:
 * if build or promote should run the script will check if the current status of the environment (first environment or the given environment) has status building or generating_repodata. If yes then the task will not be triggered and output the information to standard output to let user know that the build or promote is already running.
 
 
