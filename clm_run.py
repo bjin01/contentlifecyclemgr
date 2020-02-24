@@ -40,7 +40,9 @@ key = client.auth.login(MANAGER_LOGIN, MANAGER_PASSWORD)
 today = datetime.today()
 earliest_occurrence = xmlrpclib.DateTime(today)
 
+status_text = ['building',  'generating_repodata']
 tasko_text = 'Check taskomatic logs in order to monitor the status of the build and promote tasks e.g. # tail -f /var/log/rhn/rhn_taskomatic_daemon.log.'
+
 def printzip(dict_object):
     for i in dict_object:
         keys = i.keys()
@@ -87,7 +89,7 @@ def check_env_status(key,  projLabel,  *args):
         try:
             lookupenv = client.contentmanagement.lookupEnvironment(key, projLabel,  envLabel)
             for k,  v in lookupenv.items():
-                if k == "status" and v == 'building':
+                if k == "status" and v in status_text:
                         print("An existing instance is already running. Exit return code 0")
                         exit(0)
         except Exception as ex:
@@ -97,9 +99,10 @@ def check_env_status(key,  projLabel,  *args):
     else:
         try:
             lookupenv = client.contentmanagement.lookupEnvironment(key, projLabel,  envLabel)
+            print(lookupenv)
             for k,  v in lookupenv.items():
                 for k,  v in lookupenv.items():
-                     if k == "status" and v == 'building':
+                     if k == "status" and v in status_text:
                             print("An existing instance is already running. Exit return code 0")
                             exit(0)
         except Exception as ex:
@@ -127,16 +130,17 @@ def promoteenvironment(key,  projLabel,  envLabel):
         print("lookup project and environment label failed. Maybe the project and or environment label does not exist. exit with error")
         exit(1)
     
+    target = 0
     for k,  v in lookupenv.items():
-        no_target = 1
-        if  k.find("nextEnvironmentLabel"):
-            no_target = 0
+        
+        if  k in "nextEnvironmentLabel":
+            check_env_status(key,  projLabel, v)
+            target = 1
 
-    if no_target == 1:
+    if target == 0:
         print("The environment label you entered does not have a next environment to promote to! Exit with error.")
         exit(1)
     else:
-        check_env_status(key,  projLabel, envLabel)
         try:
             promote_result = client.contentmanagement.promoteProject(key, projLabel,  envLabel)
             if promote_result == 1:
