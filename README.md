@@ -37,6 +37,6 @@ optional arguments:
 * promote environment (stages) by providing project label and project environment label. 
 
 ## specical checks added:
-* if build or promote should run the script will check if the current status of the environment (first environment or the given environment) has status building or generating_repodata. If yes then the task will not be triggered and output the information to standard output to let user know that the build or promote is already running.
+* The script will check if the current status of the environment (first environment or the given environment) has status building or generating_repodata. If yes then the task will not be triggered and output the information to standard output to let user know that the build or promote is already running.
 
 
