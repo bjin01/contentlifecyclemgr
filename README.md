@@ -27,7 +27,8 @@ optional arguments:
   --projname PROJNAME   Enter the desired project name. e.g. myproject
   --projLabel PROJLABEL
                         Enter the project label. e.g. mytest
-  --envLabel ENVLABEL   Enter the environment label. e.g. dev```
+  --envLabel ENVLABEL   Enter the environment label. e.g. dev
+  ```
   
 ##main features
 
