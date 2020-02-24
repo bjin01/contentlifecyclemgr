@@ -73,10 +73,46 @@ def listEnvironment(key, projectLabel):
         print("no projectEnvironments found")
         return False
 
+def check_env_status(key,  projLabel,  *args):
+    if not args:
+        envLabel = ''
+    else:
+        for a in args:
+            envLabel = a
+    if envLabel == '':
+        lookup_proj_return = client.contentmanagement.lookupProject(key, projLabel)
+        for k,  v in lookup_proj_return.items():
+            if k in 'firstEnvironment':
+                envLabel = v
+        try:
+            lookupenv = client.contentmanagement.lookupEnvironment(key, projLabel,  envLabel)
+            for k,  v in lookupenv.items():
+                if k == "status" and v == 'building':
+                        print("An existing instance is already running. Exit return code 0")
+                        exit(0)
+        except Exception as ex:
+            print(ex)
+            print("check_env_status failed. Exit with error")
+            exit(1)
+    else:
+        try:
+            lookupenv = client.contentmanagement.lookupEnvironment(key, projLabel,  envLabel)
+            for k,  v in lookupenv.items():
+                for k,  v in lookupenv.items():
+                     if k == "status" and v == 'building':
+                            print("An existing instance is already running. Exit return code 0")
+                            exit(0)
+        except Exception as ex:
+            print(ex)
+            print("check_env_status failed. Exit with error")
+            exit(1)
+    return
+        
 def buildproject(key,  projLabel):
+    check_env_status(key,  projLabel)
     buildresult = client.contentmanagement.buildProject(key, projLabel)
     if buildresult == 1:
-            print("Build %s task: Succesful"  %(projLabel))
+            print("Build %s task: Successful"  %(projLabel))
             print(tasko_text)
     else:
             print("Build failed. Exit with error.")
@@ -86,7 +122,6 @@ def buildproject(key,  projLabel):
 def promoteenvironment(key,  projLabel,  envLabel):
     try:
         lookupenv = client.contentmanagement.lookupEnvironment(key, projLabel,  envLabel)
-        print(lookupenv)
     except Exception as ex:
         print(ex)
         print("lookup project and environment label failed. Maybe the project and or environment label does not exist. exit with error")
@@ -101,10 +136,11 @@ def promoteenvironment(key,  projLabel,  envLabel):
         print("The environment label you entered does not have a next environment to promote to! Exit with error.")
         exit(1)
     else:
+        check_env_status(key,  projLabel, envLabel)
         try:
             promote_result = client.contentmanagement.promoteProject(key, projLabel,  envLabel)
             if promote_result == 1:
-                print("promote %s %s task: Succesful."  %(projLabel, envLabel))
+                print("promote %s %s task: Successful."  %(projLabel, envLabel))
                 print(tasko_text)
             else:
                 print("promote failed. Exit with error.")
